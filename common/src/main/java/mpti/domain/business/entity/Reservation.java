@@ -36,6 +36,10 @@ public class Reservation {
 
     private int year, month, day, hour;
 
+    @CreatedDate
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
     public Reservation(Long trainerId, int year, int month, int day, int hour) {
         this.trainerId = trainerId;
         this.year = year;

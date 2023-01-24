@@ -6,7 +6,6 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table
 @DiscriminatorValue("review")
 @Getter
 @Setter
