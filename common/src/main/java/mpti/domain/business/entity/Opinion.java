@@ -19,7 +19,7 @@ public abstract class Opinion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name ="report_id")
+    @Column(name ="opinion_id")
     private Long id;
 
 //    @ManyToOne(fetch = FetchType.LAZY)

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 @RestController
 @RequestMapping("/opinion")
@@ -38,9 +40,9 @@ public class OpinionController {
 
     // [GET] 리뷰 상세 정보 반환
     @GetMapping("/review/detail/{reviewId}")
-    public ResponseEntity<Review> getReviewDetail(@PathVariable Long reviewId) {
+    public ResponseEntity<Optional<Review>> getReviewDetail(@PathVariable Long reviewId) {
 
-        Review review = opinionService.loadReviewDetail(reviewId);
+        Optional<Review> review = opinionService.loadReviewDetail(reviewId);
 
         return ResponseEntity.ok(review);
     }

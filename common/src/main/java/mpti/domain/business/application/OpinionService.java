@@ -1,32 +1,33 @@
 package mpti.domain.business.application;
 
 import lombok.RequiredArgsConstructor;
-import mpti.domain.business.dao.OpinionRepository;
-import mpti.domain.business.dao.ReservationRepository;
-import mpti.domain.business.entity.Opinion;
+import mpti.domain.business.dao.OpinionRepository111;
+import mpti.domain.business.dao.ReviewRepository;
 import mpti.domain.business.entity.Report;
 import mpti.domain.business.entity.Review;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class OpinionService {
 
-    private final OpinionRepository opinionRepository;
+    private final OpinionRepository111 opinionRepository111;
+
+    private final ReviewRepository reviewRepository;
 
 
     public List<Review> loadReviews() {
-        return opinionRepository.findAllReviews();
+        return reviewRepository.findAll();
     }
 
     public List<Review> loadReviewsByUserId(Long userId) {
-        return opinionRepository.findAllReviewsByUserId(userId);
+        return reviewRepository.findByUserId(userId);
     }
 
     public void writeReview(Long userId, Long trainerId, Double star, String memo) {
@@ -36,13 +37,11 @@ public class OpinionService {
         review.setStar(star);
         review.setMemo(memo);
 
-        opinionRepository.saveReview(review);
-
+        reviewRepository.save(review);
     }
 
-
-    public Review loadReviewDetail(Long reviewId) {
-        return opinionRepository.findOneReview(reviewId);
+    public Optional<Review> loadReviewDetail(Long id) {
+        return reviewRepository.findById(id);
     }
 
     public void writeReport(Long userId, Long trainerId, String memo) {
@@ -51,15 +50,15 @@ public class OpinionService {
         report.setTrainerId(trainerId);
         report.setMemo(memo);
 
-        opinionRepository.saveReport(report);
+        opinionRepository111.saveReport(report);
     }
 
     public List<Report> loadReports() {
-        return opinionRepository.findAllReports();
+        return opinionRepository111.findAllReports();
     }
 
     public Report loadReport(Long reportId) {
-        return opinionRepository.findOneReport(reportId);
+        return opinionRepository111.findOneReport(reportId);
     }
 
     public LocalDateTime processReport(Long reportId, int blockPeriod) {
