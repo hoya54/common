@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 //import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 //@Entity
 //@Getter
@@ -63,6 +64,6 @@ public class Message {
         this.channelId = channelId;
         this.writer = writer;
         this.content = content;
-        this.createdDate = LocalDateTime.now();
+        this.createdDate = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
     }
 }
