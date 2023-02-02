@@ -1,10 +1,15 @@
 package mpti.domain.chat.application;
 
 import lombok.RequiredArgsConstructor;
+import mpti.domain.chat.api.request.ChatHandlerRequest;
+import mpti.domain.chat.api.response.ChatHandlerResponse;
+import mpti.domain.chat.api.response.GetChatHistoryResponse;
 import mpti.domain.chat.api.response.GetChatListResponse;
+//import mpti.domain.chat.dao.ChannelMongoRepository;
 import mpti.domain.chat.dao.ChannelRepository;
+//import mpti.domain.chat.dao.MessageMongoRepository;
 import mpti.domain.chat.dao.MessageRepository;
-import mpti.domain.chat.dto.MsgDto;
+//import mpti.domain.chat.dto.MessageDto;
 import mpti.domain.chat.entity.Channel;
 import mpti.domain.chat.entity.Message;
 import org.springframework.stereotype.Service;
@@ -13,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -22,12 +28,17 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
 
-    public void saveMessage(MsgDto msgDto) {
+
+    public ChatHandlerResponse saveMessage(ChatHandlerRequest chatHandlerRequest) {
 //        Optional<Channel> channel = channelRepository.findById(msgDto.getChannelId());
 
-        Message message = new Message(msgDto.getChannelId(), msgDto.getUserName(), msgDto.getContent());
+        Message message = new Message(chatHandlerRequest.getChannelId(), chatHandlerRequest.getWriter(), chatHandlerRequest.getContent());
 
-        messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
+
+        ChatHandlerResponse chatHandlerResponse = new ChatHandlerResponse(savedMessage);
+
+        return chatHandlerResponse;
     }
 
     public Channel getChannel(Long trainerId, Long userId) {
@@ -42,8 +53,14 @@ public class ChatService {
         }
     }
 
-    public List<Message> getChatHistory(Long channelId) {
-        return messageRepository.findByChannelId(channelId);
+    public List<GetChatHistoryResponse> getChatHistory(String  channelId) {
+        List<Message> chatList = messageRepository.findAllByChannelId(channelId);
+
+        List<GetChatHistoryResponse> getChatHistoryResponseList = chatList.stream()
+                .map((chat) -> new GetChatHistoryResponse(chat))
+                .collect(Collectors.toList());
+
+        return getChatHistoryResponseList;
     }
 
 
@@ -51,6 +68,7 @@ public class ChatService {
 
         List<Channel> channels;
         List<GetChatListResponse> chatList = new ArrayList<>();
+
 
         if (role.equals("TRAINER")) {
             channels = channelRepository.findByTrainerId(id);
@@ -60,7 +78,15 @@ public class ChatService {
 
         for (Channel channel : channels) {
             Message message = messageRepository.findTop1ByChannelIdOrderByCreatedDateDesc(channel.getId());
-            GetChatListResponse getChatListResponse = new GetChatListResponse(message.getWriter(), message.getContent());
+            if(message == null){
+                continue;
+            }
+            GetChatListResponse getChatListResponse;
+            if (role.equals("TRAINER")) {
+                getChatListResponse = new GetChatListResponse(channel.getId(), channel.getUserId(), message.getContent());
+            }else{
+                getChatListResponse = new GetChatListResponse(channel.getId(), channel.getTrainerId(), message.getContent());
+            }
             chatList.add(getChatListResponse);
         }
 

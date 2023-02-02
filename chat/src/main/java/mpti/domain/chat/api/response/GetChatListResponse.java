@@ -5,7 +5,9 @@ import lombok.Data;
 @Data
 public class GetChatListResponse {
 
-    private String writer;
+    private String channelId;
+
+    private Long yourId;
 
     private String content;
 
@@ -14,8 +16,9 @@ public class GetChatListResponse {
 //    private Long unRead;
 
 
-    public GetChatListResponse(String writer, String content) {
-        this.writer = writer;
+    public GetChatListResponse(String channelId, Long yourId, String content) {
+        this.channelId = channelId;
+        this.yourId = yourId;
         this.content = content;
     }
 }

@@ -1,16 +1,24 @@
 package mpti.domain.chat.api.controller;
 
 import lombok.RequiredArgsConstructor;
+import mpti.domain.chat.api.request.ChatHandlerRequest;
+import mpti.domain.chat.api.response.ChatHandlerResponse;
+import mpti.domain.chat.api.response.GetChannelIdResponse;
+import mpti.domain.chat.api.response.GetChatHistoryResponse;
 import mpti.domain.chat.api.response.GetChatListResponse;
 import mpti.domain.chat.application.ChatService;
-import mpti.domain.chat.dto.MsgDto;
+//import mpti.domain.chat.dto.MessageDto;
+//import mpti.domain.chat.dto.RoomListRequest;
 import mpti.domain.chat.entity.Channel;
 import mpti.domain.chat.entity.Message;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
+@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
 @RestController
 @RequestMapping("/chat")
 @RequiredArgsConstructor
@@ -20,34 +28,61 @@ public class ChatController {
 
     private final ChatService chatService;
 
+//    @MessageMapping("/chat/list")
+//    public void SocketHandler2(RoomListRequest roomListRequest){
+//        System.out.println("채널 리스트 진입");
+//
+//        List<Channel> channelList = chatService.getChannelList(1L);
+//
+//        simpMessagingTemplate.convertAndSend("/send/roomList", channelList);
+//    }
+
+
     // /receive를 메시지를 받을 endpoint로 설정합니다.
     @MessageMapping("/chat/receive")
-    public void SocketHandler(MsgDto msgDto){
+    public void chatHandler(ChatHandlerRequest chatHandlerRequest){
 
-        System.out.println(msgDto);
+//        chatService.getChannel(msgDto.getUserId(), msgDto.getTrainerId());
+//        List<Channel> channelList = chatService.getChannelList(1L);
+//        simpMessagingTemplate.convertAndSend("/send/roomList", channelList);
 
-        chatService.saveMessage(msgDto);
+        System.out.println(chatHandlerRequest);
 
-        simpMessagingTemplate.convertAndSend("/send" + "/" + msgDto.getChannelId(), msgDto);
+        ChatHandlerResponse chatHandlerResponse = chatService.saveMessage(chatHandlerRequest);
+
+        simpMessagingTemplate.convertAndSend("/send" + "/" + chatHandlerResponse.getChannelId(), chatHandlerResponse);
+
     }
+
+
+
+
+
+
+
+
+
+
 
 //    [GET] 현재 본인과 상대방의 아이디를 가지고 채널 아이디를 받아옴(기존에 채널이 없었다면 만들어서 반환)
 
     @GetMapping("/channel/{trainerId}/{userId}")
-    public Long getChannelId(@PathVariable Long trainerId, @PathVariable Long userId){
+    public ResponseEntity<Optional<GetChannelIdResponse>> getChannelId(@PathVariable Long trainerId, @PathVariable Long userId){
 
         Channel channel = chatService.getChannel(trainerId, userId);
-        Long channelId = channel.getId();
+        System.out.println(channel.getId());
 
-        return channelId;
+        String channelId = channel.getId();
+
+        return ResponseEntity.ok(Optional.of(new GetChannelIdResponse(channelId)));
     }
 
-//    [GET] 해당 채팅방의 과거 대화 기록 조회
+//    [GET] 해당 채팅방의 메시지 리스트 반환
 
     @GetMapping("/load/{channelId}")
-    public List<Message> getChatHistory(@PathVariable Long channelId){
+    public List<GetChatHistoryResponse> getChatHistory(@PathVariable String channelId){
 
-        List<Message> chatHistory = chatService.getChatHistory(channelId);
+        List<GetChatHistoryResponse> chatHistory = chatService.getChatHistory(channelId);
 
         return chatHistory;
     }
